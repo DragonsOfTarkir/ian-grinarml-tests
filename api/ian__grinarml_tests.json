@@ -1,0 +1,244 @@
+{
+  "info": {
+    "name": "RateDoc Cities API Tests",
+    "_postman_id": "c1a9b9d2-1234-4abc-9999-abcdef123456",
+    "description": "CRUD tests for Cities endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create City",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/cities",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "cities"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"TestCity_{{timestamp}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.environment.set('timestamp', Date.now());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "const jsonData = pm.response.json();",
+              "",
+              "pm.test('City created successfully', function () {",
+              "    pm.expect(jsonData).to.have.property('id');",
+              "    pm.expect(jsonData).to.have.property('name');",
+              "});",
+              "",
+              "pm.environment.set('cityId', jsonData.id);",
+              "pm.environment.set('cityName', jsonData.name);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get City by ID",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/cities/{{cityId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "cities", "{{cityId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const data = pm.response.json();",
+              "",
+              "pm.test('Correct city returned', function () {",
+              "    pm.expect(data.id).to.eql(pm.environment.get('cityId'));",
+              "    pm.expect(data.name).to.eql(pm.environment.get('cityName'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update City",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/cities/{{cityId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "cities", "{{cityId}}"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"UpdatedCity_{{timestamp}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.environment.set('timestamp', Date.now());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const data = pm.response.json();",
+              "",
+              "pm.test('City updated successfully', function () {",
+              "    pm.expect(data.name).to.include('UpdatedCity');",
+              "});",
+              "",
+              "pm.environment.set('updatedCityName', data.name);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Verify Updated City",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/cities/{{cityId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "cities", "{{cityId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const data = pm.response.json();",
+              "",
+              "pm.test('City name is updated', function () {",
+              "    pm.expect(data.name).to.eql(pm.environment.get('updatedCityName'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete City",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/cities/{{cityId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "cities", "{{cityId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 or 204', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Verify City Deleted",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/cities/{{cityId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "cities", "{{cityId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('City no longer exists', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([404, 400]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Cities",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/cities",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "cities"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const data = pm.response.json();",
+              "",
+              "pm.test('Response is an array', function () {",
+              "    pm.expect(data).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
